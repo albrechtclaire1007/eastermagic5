@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Nina Easter 5s Pack</title>
+  <style>
+    :root{
+      --bg:#fff8ef;
+      --panel:rgba(255,255,255,.92);
+      --line:#d9c7ad;
+      --ink:#4b3b2a;
+      --accent:#f3b45c;
+      --accent2:#9fd38f;
+      --ok:#bfe7b8;
+      --bad:#ffd3d3;
+      --shadow:0 10px 24px rgba(0,0,0,.10);
+      --r:24px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--ink);
+      background:
+        linear-gradient(rgba(255,255,255,.2), rgba(255,255,255,.2)),
+        url('https://i.postimg.cc/4dYkbFtL/nina-easter-background-wide.png') center/cover no-repeat fixed;
+      overflow:hidden;
+    }
+
+    .app{
+      width:min(1100px, 96vw);
+      height:min(780px, 96vh);
+      margin:2vh auto;
+      background:var(--panel);
+      border:4px solid rgba(255,255,255,.75);
+      border-radius:32px;
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      backdrop-filter: blur(4px);
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 18px;
+      background:rgba(255,255,255,.75);
+      border-bottom:2px solid #eee1cf;
+    }
+
+    .title{
+      font-size:clamp(22px, 3vw, 34px);
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .top-controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    button{
+      border:none;
+      border-radius:18px;
+      padding:12px 18px;
+      font-size:18px;
+      font-weight:700;
+      cursor:pointer;
+      color:var(--ink);
+      background:#fff;
+      box-shadow:0 4px 10px rgba(0,0,0,.08);
+    }
+    button:hover{transform:translateY(-1px)}
+    button:active{transform:translateY(0)}
+    button.primary{background:var(--accent)}
+    button.secondary{background:var(--accent2)}
+    button.small{padding:8px 12px; font-size:15px; border-radius:14px}
+
+    .stage{
+      position:relative;
+      flex:1;
+      padding:18px;
+      overflow:hidden;
+    }
+
+    .screen{display:none; width:100%; height:100%}
+    .screen.active{display:block}
+
+    .center-col{
+      width:100%;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:18px;
+      text-align:center;
+    }
+
+    .big{
+      font-size:clamp(28px, 4vw, 46px);
+      font-weight:800;
+      line-height:1.15;
+      text-shadow:0 1px 0 rgba(255,255,255,.7);
+    }
+    .mid{
+      font-size:clamp(20px, 2.8vw, 30px);
+      font-weight:700;
+    }
+
+    .bunny-home{
+      width:min(240px, 45vw);
+      max-height:34vh;
+      object-fit:contain;
+    }
+
+    .menu-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(220px, 1fr));
+      gap:16px;
+      width:min(720px, 100%);
+      margin-top:6px;
+    }
+
+    .menu-card{
+      background:rgba(255,255,255,.85);
+      border:3px solid #f0dfc8;
+      border-radius:24px;
+      padding:18px;
+      min-height:120px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+      box-shadow:0 6px 12px rgba(0,0,0,.06);
+    }
+
+    .menu-card .emoji{font-size:34px}
+    .menu-card .label{font-size:24px; font-weight:800}
+
+    .info-btn{
+      position:absolute;
+      top:16px;
+      right:16px;
+      width:54px;
+      height:54px;
+      padding:0;
+      border-radius:50%;
+      background:#fff;
+      display:grid;
+      place-items:center;
+      z-index:5;
+    }
+    .info-btn img{width:32px;height:32px;object-fit:contain}
+
+    .parent-box{
+      position:absolute;
+      top:78px;
+      right:16px;
+      width:min(320px, calc(100% - 32px));
+      background:rgba(255,255,255,.98);
+      border:3px solid #f0dfc8;
+      border-radius:22px;
+      padding:14px;
+      box-shadow:var(--shadow);
+      z-index:6;
+      display:none;
+    }
+    .parent-box.show{display:block}
+    .parent-box h3{margin:0 0 8px 0; font-size:18px}
+    .parent-box p{margin:0; font-size:15px; line-height:1.4}
+
+    .bottom-bar{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+
+    .feedback{
+      min-height:44px;
+      padding:8px 16px;
+      border-radius:16px;
+      background:rgba(255,255,255,.75);
+      font-size:24px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+
+    .basket-row,
+    .hands-row,
+    .stones-row,
+    .group-row{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      gap:clamp(8px, 2vw, 22px);
+      flex-wrap:wrap;
+    }
+
+    .basket-card,
+    .hand-card,
+    .group-card,
+    .stone-card{
+      position:relative;
+      border:none;
+      background:transparent;
+      box-shadow:none;
+      padding:0;
+    }
+
+    .basket-card img.main-basket{width:min(160px, 22vw); max-width:160px}
+    .basket-card .peek{
+      position:absolute;
+      left:50%; top:10px;
+      transform:translateX(-50%);
+      width:70%;
+      opacity:0;
+      transition:opacity .25s ease;
+      pointer-events:none;
+    }
+    .basket-card.reveal .peek{opacity:1}
+
+    .hand-card img{width:min(190px, 24vw); max-width:190px}
+    .group-card img{width:min(210px, 28vw); max-width:210px}
+    .stone-card img{width:min(112px, 14vw); max-width:112px}
+
+    .choose-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+      gap:14px;
+      width:min(860px, 100%);
+    }
+
+    .choice{
+      background:#fff;
+      border:3px solid #f0dfc8;
+      border-radius:24px;
+      padding:14px;
+      min-height:110px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:8px;
+      font-size:32px;
+      font-weight:900;
+    }
+
+    .choice img{max-width:100%; max-height:74px; object-fit:contain}
+    .choice.ok{background:var(--ok)}
+    .choice.bad{background:var(--bad)}
+
+    .target-pill{
+      background:#fff;
+      border:3px solid #f0dfc8;
+      border-radius:999px;
+      padding:12px 22px;
+      font-size:clamp(28px, 4vw, 44px);
+      font-weight:900;
+      box-shadow:0 4px 10px rgba(0,0,0,.06);
+    }
+
+    .jump-track{
+      width:min(940px, 100%);
+      min-height:240px;
+      position:relative;
+      padding:24px 20px 16px;
+    }
+
+    .bunny-jumper{
+      position:absolute;
+      top:0;
+      left:0;
+      width:min(120px, 18vw);
+      transition:left .35s ease, top .35s ease;
+      pointer-events:none;
+    }
+
+    .stone-wrap{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:10px;
+      position:absolute;
+      left:20px;
+      right:20px;
+      bottom:42px;
+    }
+
+    .stone-slot{
+      width:18%;
+      text-align:center;
+      position:relative;
+    }
+    .stone-slot .num{
+      margin-top:8px;
+      font-size:clamp(24px, 3vw, 40px);
+      font-weight:900;
+    }
+
+    .tiny-note{
+      font-size:16px;
+      opacity:.8;
+    }
+
+    @media (max-width: 760px){
+      .app{height:100vh; width:100vw; margin:0; border-radius:0}
+      .menu-grid{grid-template-columns:1fr}
+      .topbar{padding:10px 12px}
+      .stage{padding:12px}
+      .parent-box{top:68px}
+      .feedback{font-size:20px}
+      button{font-size:16px; padding:10px 14px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title" id="topTitle">Nina’s Easter 5s Games</div>
+      <div class="top-controls">
+        <button class="small" id="homeBtn">Home</button>
+      </div>
+    </div>
+
+    <div class="stage">
+      <section class="screen active" id="screen-home">
+        <div class="center-col">
+          <img class="bunny-home" src="https://i.postimg.cc/GBWjkpYd/bunnysitting.png" alt="Bunny" />
+          <div class="big">Let’s play with 5s!</div>
+          <div class="mid">Tap a game.</div>
+          <div class="menu-grid">
+            <button class="menu-card" data-go="baskets">
+              <div class="emoji">🧺</div>
+              <div class="label">Secret Baskets</div>
+            </button>
+            <button class="menu-card" data-go="hands">
+              <div class="emoji">✋</div>
+              <div class="label">Hands = 5</div>
+            </button>
+            <button class="menu-card" data-go="build">
+              <div class="emoji">🥚</div>
+              <div class="label">Build with 5</div>
+            </button>
+            <button class="menu-card" data-go="jump">
+              <div class="emoji">🐰</div>
+              <div class="label">Jump by 5</div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-baskets">
+        <button class="info-btn" data-parent="baskets"><img src="https://i.postimg.cc/hzV1Mqbc/info.png" alt="Info"></button>
+        <div class="parent-box" id="parent-baskets">
+          <h3>Parent tip</h3>
+          <p>Use real cups or baskets. Put exactly 5 eggs, grapes, coins, or toy pieces in each one. Cover them. Count in 5s only. Do not go back to counting all from 1.</p>
+        </div>
+        <div class="center-col">
+          <div class="big">How many eggs?</div>
+          <div class="mid">Tap the baskets. Then count in 5s.</div>
+          <div class="basket-row" id="basketRow"></div>
+          <div class="feedback" id="basketFeedback">Tap a basket.</div>
+          <div class="bottom-bar">
+            <button class="secondary" id="basketRevealBtn">Reveal all</button>
+            <button class="primary" id="basketNextBtn">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-hands">
+        <button class="info-btn" data-parent="hands"><img src="https://i.postimg.cc/hzV1Mqbc/info.png" alt="Info"></button>
+        <div class="parent-box" id="parent-hands">
+          <h3>Parent tip</h3>
+          <p>Use real hands or gloves. Ask: “How many hands?” then count 5, 10, 15, 20. Keep the focus on groups, not on counting each finger one by one.</p>
+        </div>
+        <div class="center-col">
+          <div class="big">How many fingers?</div>
+          <div class="mid">Count in 5s.</div>
+          <div class="hands-row" id="handsRow"></div>
+          <div class="choose-grid" id="handsChoices"></div>
+          <div class="feedback" id="handsFeedback">Choose the answer.</div>
+          <div class="bottom-bar">
+            <button class="primary" id="handsNextBtn">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-build">
+        <button class="info-btn" data-parent="build"><img src="https://i.postimg.cc/hzV1Mqbc/info.png" alt="Info"></button>
+        <div class="parent-box" id="parent-build">
+          <h3>Parent tip</h3>
+          <p>Show only full groups of 5. Ask: “How many groups of 5 do we need?” Avoid loose counting. Let her build numbers with full chunks.</p>
+        </div>
+        <div class="center-col">
+          <div class="big">Build the number</div>
+          <div class="target-pill" id="buildTarget">15</div>
+          <div class="mid">Choose the right groups of 5.</div>
+          <div class="choose-grid" id="buildChoices"></div>
+          <div class="feedback" id="buildFeedback">Tap the right picture.</div>
+          <div class="bottom-bar">
+            <button class="primary" id="buildNextBtn">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-jump">
+        <button class="info-btn" data-parent="jump"><img src="https://i.postimg.cc/hzV1Mqbc/info.png" alt="Info"></button>
+        <div class="parent-box" id="parent-jump">
+          <h3>Parent tip</h3>
+          <p>Say the numbers aloud together while the bunny jumps: 5, 10, 15, 20. You can recreate it with floor spots, cushions, or chalk circles at home.</p>
+        </div>
+        <div class="center-col">
+          <div class="big">Jump by 5</div>
+          <div class="mid">Tap Next jump.</div>
+          <div class="jump-track">
+            <img class="bunny-jumper" id="bunnyJumper" src="https://i.postimg.cc/yJMTFN9K/bunny-jumping.png" alt="Jumping bunny" />
+            <div class="stone-wrap" id="stoneWrap"></div>
+          </div>
+          <div class="feedback" id="jumpFeedback">Start at 0.</div>
+          <div class="bottom-bar">
+            <button class="secondary" id="jumpResetBtn">Reset</button>
+            <button class="primary" id="jumpNextBtn">Next jump</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const screens = {
+      home: document.getElementById('screen-home'),
+      baskets: document.getElementById('screen-baskets'),
+      hands: document.getElementById('screen-hands'),
+      build: document.getElementById('screen-build'),
+      jump: document.getElementById('screen-jump')
+    };
+
+    const titleMap = {
+      home: "Nina’s Easter 5s Games",
+      baskets: "Secret Baskets",
+      hands: "Hands = 5",
+      build: "Build with 5",
+      jump: "Jump by 5"
+    };
+
+    function showScreen(name){
+      Object.values(screens).forEach(s => s.classList.remove('active'));
+      screens[name].classList.add('active');
+      document.getElementById('topTitle').textContent = titleMap[name];
+      document.querySelectorAll('.parent-box').forEach(box => box.classList.remove('show'));
+    }
+
+    document.querySelectorAll('[data-go]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const go = btn.getAttribute('data-go');
+        showScreen(go);
+        if(go === 'baskets') setupBaskets();
+        if(go === 'hands') setupHands();
+        if(go === 'build') setupBuild();
+        if(go === 'jump') setupJump();
+      });
+    });
+
+    document.getElementById('homeBtn').addEventListener('click', () => showScreen('home'));
+
+    document.querySelectorAll('.info-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.parent;
+        document.getElementById('parent-' + id).classList.toggle('show');
+      });
+    });
+
+    function shuffle(arr){
+      const copy = [...arr];
+      for(let i = copy.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    const basketRow = document.getElementById('basketRow');
+    const basketFeedback = document.getElementById('basketFeedback');
+    let basketCount = 1;
+
+    function setupBaskets(){
+      basketCount = [1,2,3,4][Math.floor(Math.random() * 4)];
+      basketRow.innerHTML = '';
+      basketFeedback.textContent = 'Tap a basket.';
+      for(let i=0; i<basketCount; i++){
+        const btn = document.createElement('button');
+        btn.className = 'basket-card';
+        btn.innerHTML = `
+          <img class="peek" src="https://i.postimg.cc/KK65nYLy/5eggs.png" alt="5 eggs">
+          <img class="main-basket" src="https://i.postimg.cc/XZRgwvFb/basket.png" alt="Basket">
+        `;
+        btn.addEventListener('click', () => {
+          btn.classList.toggle('reveal');
+          basketFeedback.textContent = 'Count: ' + Array.from({length:basketCount}, (_,n)=>(n+1)*5).join(', ');
+        });
+        basketRow.appendChild(btn);
+      }
+    }
+
+    document.getElementById('basketRevealBtn').addEventListener('click', () => {
+      document.querySelectorAll('.basket-card').forEach(card => card.classList.add('reveal'));
+      basketFeedback.textContent = 'Count: ' + Array.from({length:basketCount}, (_,n)=>(n+1)*5).join(', ');
+    });
+    document.getElementById('basketNextBtn').addEventListener('click', setupBaskets);
+
+    const handsRow = document.getElementById('handsRow');
+    const handsChoices = document.getElementById('handsChoices');
+    const handsFeedback = document.getElementById('handsFeedback');
+    let handsAnswer = 5;
+
+    function setupHands(){
+      const count = [1,2,3,4][Math.floor(Math.random() * 4)];
+      handsAnswer = count * 5;
+      handsRow.innerHTML = '';
+      handsChoices.innerHTML = '';
+      handsFeedback.textContent = 'Choose the answer.';
+
+      for(let i=0; i<count; i++){
+        const div = document.createElement('div');
+        div.className = 'hand-card';
+        const handSrc = i % 2 === 0
+          ? 'https://i.postimg.cc/vg5tXdLy/handleft.png'
+          : 'https://i.postimg.cc/Fd0VGQg9/handright.png';
+        div.innerHTML = `<img src="${handSrc}" alt="Hand">`;
+        handsRow.appendChild(div);
+      }
+
+      const options = shuffle([
+        handsAnswer,
+        Math.max(5, handsAnswer - 5),
+        Math.min(20, handsAnswer + 5)
+      ].filter((v,i,a) => a.indexOf(v) === i)).slice(0,3);
+      while(options.length < 3){
+        const extra = [5,10,15,20][Math.floor(Math.random()*4)];
+        if(!options.includes(extra)) options.push(extra);
+      }
+
+      shuffle(options).forEach(num => {
+        const btn = document.createElement('button');
+        btn.className = 'choice';
+        btn.textContent = num;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#handsChoices .choice').forEach(c => { c.disabled = true; c.classList.remove('ok','bad'); });
+          if(num === handsAnswer){
+            btn.classList.add('ok');
+            handsFeedback.textContent = 'Yes! ' + handsAnswer;
+          } else {
+            btn.classList.add('bad');
+            handsFeedback.textContent = 'Try again. Count in 5s.';
+            const correct = Array.from(document.querySelectorAll('#handsChoices .choice')).find(c => Number(c.textContent) === handsAnswer);
+            if(correct) correct.classList.add('ok');
+          }
+        });
+        handsChoices.appendChild(btn);
+      });
+    }
+
+    document.getElementById('handsNextBtn').addEventListener('click', setupHands);
+
+    const buildTarget = document.getElementById('buildTarget');
+    const buildChoices = document.getElementById('buildChoices');
+    const buildFeedback = document.getElementById('buildFeedback');
+    let buildAnswer = 15;
+
+    function groupImageHTML(groups){
+      return `<div class="group-row">${Array.from({length:groups}, () => `<img src="https://i.postimg.cc/KK65nYLy/5eggs.png" alt="5 eggs">`).join('')}</div>`;
+    }
+
+    function setupBuild(){
+      buildAnswer = [5,10,15,20][Math.floor(Math.random() * 4)];
+      buildTarget.textContent = buildAnswer;
+      buildChoices.innerHTML = '';
+      buildFeedback.textContent = 'Tap the right picture.';
+
+      const correctGroups = buildAnswer / 5;
+      const wrongPool = [1,2,3,4].filter(g => g !== correctGroups);
+      const wrongs = shuffle(wrongPool).slice(0,2);
+      const options = shuffle([correctGroups, ...wrongs]);
+
+      options.forEach(groups => {
+        const btn = document.createElement('button');
+        btn.className = 'choice';
+        btn.innerHTML = groupImageHTML(groups);
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#buildChoices .choice').forEach(c => { c.disabled = true; c.classList.remove('ok','bad'); });
+          if(groups === correctGroups){
+            btn.classList.add('ok');
+            buildFeedback.textContent = 'Yes! ' + buildAnswer;
+          } else {
+            btn.classList.add('bad');
+            buildFeedback.textContent = 'Count the groups of 5.';
+            Array.from(document.querySelectorAll('#buildChoices .choice')).forEach(c => {
+              if((c.querySelectorAll('img').length) === correctGroups) c.classList.add('ok');
+            });
+          }
+        });
+        buildChoices.appendChild(btn);
+      });
+    }
+
+    document.getElementById('buildNextBtn').addEventListener('click', setupBuild);
+
+    const stoneWrap = document.getElementById('stoneWrap');
+    const bunnyJumper = document.getElementById('bunnyJumper');
+    const jumpFeedback = document.getElementById('jumpFeedback');
+    let jumpIndex = 0;
+    const jumpNumbers = [0,5,10,15,20];
+
+    function positionBunny(){
+      const slots = Array.from(document.querySelectorAll('.stone-slot'));
+      if(!slots.length) return;
+      const rect = slots[jumpIndex].getBoundingClientRect();
+      const parentRect = stoneWrap.getBoundingClientRect();
+      const left = rect.left - parentRect.left + rect.width/2 - 48;
+      bunnyJumper.style.left = left + 'px';
+      bunnyJumper.style.top = '-8px';
+    }
+
+    function setupJump(){
+      jumpIndex = 0;
+      stoneWrap.innerHTML = '';
+      jumpFeedback.textContent = 'Start at 0.';
+      jumpNumbers.forEach(num => {
+        const slot = document.createElement('div');
+        slot.className = 'stone-slot';
+        slot.innerHTML = `
+          <div class="stone-card"><img src="https://i.postimg.cc/9RyY1jtm/stone.png" alt="Stone"></div>
+          <div class="num">${num}</div>
+        `;
+        stoneWrap.appendChild(slot);
+      });
+      requestAnimationFrame(positionBunny);
+    }
+
+    window.addEventListener('resize', () => {
+      if(screens.jump.classList.contains('active')) requestAnimationFrame(positionBunny);
+    });
+
+    document.getElementById('jumpNextBtn').addEventListener('click', () => {
+      if(jumpIndex < jumpNumbers.length - 1){
+        jumpIndex++;
+        positionBunny();
+        jumpFeedback.textContent = 'Say: ' + jumpNumbers.slice(1, jumpIndex + 1).join(', ');
+      } else {
+        jumpFeedback.textContent = 'Great! 5, 10, 15, 20';
+      }
+    });
+
+    document.getElementById('jumpResetBtn').addEventListener('click', setupJump);
+
+    showScreen('home');
+  </script>
+</body>
+</html>
