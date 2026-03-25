@@ -215,8 +215,7 @@
 
     .basket-card,
     .hand-card,
-    .group-card,
-    .stone-card{
+    .group-card{
       position:relative;
       border:none;
       background:transparent;
@@ -225,20 +224,9 @@
     }
 
     .basket-card img.main-basket{width:min(160px, 22vw); max-width:160px}
-    .basket-card .peek{
-      position:absolute;
-      left:50%; top:10px;
-      transform:translateX(-50%);
-      width:70%;
-      opacity:0;
-      transition:opacity .25s ease;
-      pointer-events:none;
-    }
-    .basket-card.reveal .peek{opacity:1}
 
     .hand-card img{width:min(190px, 24vw); max-width:190px}
     .group-card img{width:min(210px, 28vw); max-width:210px}
-    .stone-card img{width:min(112px, 14vw); max-width:112px}
 
     .choose-grid{
       display:grid;
@@ -276,47 +264,119 @@
       box-shadow:0 4px 10px rgba(0,0,0,.06);
     }
 
-    .jump-track{
-      width:min(940px, 100%);
-      min-height:240px;
-      position:relative;
-      padding:24px 20px 16px;
+    .build-board{
+      width:min(980px, 100%);
+      display:grid;
+      grid-template-columns: minmax(180px, 240px) 1fr;
+      gap:18px;
+      align-items:start;
     }
 
-    .bunny-jumper{
+    .egg-bank{
+      background:rgba(255,255,255,.88);
+      border:3px solid #f0dfc8;
+      border-radius:24px;
+      padding:14px;
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+
+    .egg-piece{
+      background:transparent;
+      border:none;
+      box-shadow:none;
+      padding:6px;
+      border-radius:18px;
+    }
+    .egg-piece img{width:72px; height:72px; object-fit:contain}
+
+    .build-baskets{
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      gap:18px;
+      flex-wrap:wrap;
+      min-height:250px;
+    }
+
+    .drop-basket{
+      position:relative;
+      width:160px;
+      height:150px;
+      border:none;
+      background:transparent;
+      box-shadow:none;
+      padding:0;
+    }
+    .drop-basket img.base{position:absolute; inset:auto 0 0 0; width:100%; height:auto; z-index:2}
+    .basket-eggs{
       position:absolute;
-      top:0;
-      left:0;
-      width:min(120px, 18vw);
-      transition:left .35s ease, top .35s ease;
+      left:18px;
+      right:18px;
+      bottom:34px;
+      min-height:70px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:2px;
+      align-items:end;
+      justify-items:center;
+      z-index:1;
       pointer-events:none;
     }
-
-    .stone-wrap{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      gap:10px;
+    .basket-eggs img{width:32px; height:32px; object-fit:contain}
+    .basket-count{
       position:absolute;
-      left:20px;
-      right:20px;
-      bottom:42px;
+      top:-8px;
+      left:50%; transform:translateX(-50%);
+      background:#fff;
+      border:2px solid #f0dfc8;
+      border-radius:999px;
+      padding:4px 10px;
+      font-size:20px; font-weight:800;
+      z-index:3;
     }
 
-    .stone-slot{
-      width:18%;
-      text-align:center;
-      position:relative;
+    .step-grid{
+      width:min(980px, 100%);
+      display:grid;
+      grid-template-columns:repeat(5, 1fr);
+      gap:12px;
     }
-    .stone-slot .num{
-      margin-top:8px;
-      font-size:clamp(24px, 3vw, 40px);
+
+    .step-btn{
+      position:relative;
+      min-height:90px;
+      border:3px solid #e8d9c7;
+      background:rgba(255,255,255,.88);
+      border-radius:22px;
+      font-size:34px;
       font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .step-btn.ok{background:var(--ok)}
+    .step-btn.bad{background:var(--bad)}
+    .step-btn .bunny-on-step{
+      position:absolute;
+      right:4px;
+      bottom:2px;
+      width:42px;
+      height:42px;
+      object-fit:contain;
+      pointer-events:none;
     }
 
     .tiny-note{
       font-size:16px;
       opacity:.8;
+    }
+
+    @media (max-width: 760px){
+      .build-board{grid-template-columns:1fr}
+      .step-grid{grid-template-columns:repeat(4, 1fr)}
     }
 
     @media (max-width: 760px){
@@ -406,16 +466,19 @@
         <button class="info-btn" data-parent="build"><img src="https://i.postimg.cc/hzV1Mqbc/info.png" alt="Info"></button>
         <div class="parent-box" id="parent-build">
           <h3>Parent tip</h3>
-          <p>Show only full groups of 5. Ask: “How many groups of 5 do we need?” Avoid loose counting. Let her build numbers with full chunks.</p>
+          <p>Use empty cups or baskets and let her fill them one by one. Stop at 5. The goal is to feel that one full basket means 5, not to count everything from 1 each time.</p>
         </div>
         <div class="center-col">
-          <div class="big">Build the number</div>
-          <div class="target-pill" id="buildTarget">15</div>
-          <div class=\"mid\">Choose the right groups of 5</div>
-          <div class=\"target-pill\" id=\"buildTarget\" style=\"font-size:clamp(42px,6vw,70px);\">15</div>
-          <div class=\"choose-grid\" id=\"buildChoices\"></div>
-          <div class="feedback" id="buildFeedback">Tap the right picture.</div>
+          <div class="big">Fill the baskets</div>
+          <div class="mid">Make this number with full baskets of 5</div>
+          <div class="target-pill" id="buildTarget" style="font-size:clamp(42px,6vw,70px);">15</div>
+          <div class="build-board">
+            <div class="egg-bank" id="eggBank"></div>
+            <div class="build-baskets" id="buildBaskets"></div>
+          </div>
+          <div class="feedback" id="buildFeedback">Tap an egg. Then tap a basket.</div>
           <div class="bottom-bar">
+            <button class="secondary" id="buildResetBtn">Reset</button>
             <button class="primary" id="buildNextBtn">Next</button>
           </div>
         </div>
@@ -425,20 +488,16 @@
         <button class="info-btn" data-parent="jump"><img src="https://i.postimg.cc/hzV1Mqbc/info.png" alt="Info"></button>
         <div class="parent-box" id="parent-jump">
           <h3>Parent tip</h3>
-          <p>Say the numbers aloud together while the bunny jumps: 5, 10, 15, 20. You can recreate it with floor spots, cushions, or chalk circles at home.</p>
+          <p>Ask her to click the next number in the 5s sequence: 5, 10, 15, 20. The bunny should land on that number. Later, you can do the same on a real number path on the floor.</p>
         </div>
         <div class="center-col">
-          <div class="big">Jump by 5</div>
-          <div class="mid">Tap Next jump.</div>
-          <div class=\"jump-track\" style=\"background:url('https://i.postimg.cc/SKhNN4Bs/basket5.png') center/cover no-repeat; border-radius:20px;\">
-            <img class=\"bunny-jumper\" id=\"bunnyJumper\" src=\"https://i.postimg.cc/GBWjkpYd/bunnysitting.png\" alt=\"Bunny\" />
-            <div class=\"stone-wrap\" id=\"stoneWrap\"></div>
-          </div>
-          </div>
-          <div class="feedback" id="jumpFeedback">Start at 0.</div>
+          <div class="big">Click the right step</div>
+          <div class="mid">Which number comes next?</div>
+          <div class="target-pill" id="jumpPrompt">Start at 0 → click 5</div>
+          <div class="step-grid" id="stepGrid"></div>
+          <div class="feedback" id="jumpFeedback">Click 5.</div>
           <div class="bottom-bar">
             <button class="secondary" id="jumpResetBtn">Reset</button>
-            <button class="primary" id="jumpNextBtn">Next jump</button>
           </div>
         </div>
       </section>
@@ -593,88 +652,135 @@
       return `<div class="group-row">${Array.from({length:groups}, () => `<img src="https://i.postimg.cc/KK65nYLy/5eggs.png" alt="5 eggs">`).join('')}</div>`;
     }
 
+    const buildTarget = document.getElementById('buildTarget');
+    const buildBaskets = document.getElementById('buildBaskets');
+    const buildFeedback = document.getElementById('buildFeedback');
+    const eggBank = document.getElementById('eggBank');
+    let buildAnswer = 15;
+    let selectedEgg = null;
+    let basketState = [];
+    const eggSources = [
+      'https://i.postimg.cc/wtCkhBJq/egg1.png',
+      'https://i.postimg.cc/ftYf5h76/egg2.png',
+      'https://i.postimg.cc/zbTFp1ws/egg3.png',
+      'https://i.postimg.cc/hzV1MqbW/egg4.png'
+    ];
+
+    function renderEggBank(){
+      eggBank.innerHTML = '';
+      for(let i=0;i<12;i++){
+        const btn = document.createElement('button');
+        btn.className = 'egg-piece';
+        const src = eggSources[i % eggSources.length];
+        btn.innerHTML = `<img src="${src}" alt="Egg">`;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.egg-piece').forEach(e => e.style.outline = 'none');
+          selectedEgg = src;
+          btn.style.outline = '4px solid #f3b45c';
+          buildFeedback.textContent = 'Now tap a basket.';
+        });
+        eggBank.appendChild(btn);
+      }
+    }
+
+    function renderBuildBaskets(){
+      buildBaskets.innerHTML = '';
+      basketState.forEach((eggs, basketIndex) => {
+        const btn = document.createElement('button');
+        btn.className = 'drop-basket';
+        btn.innerHTML = `
+          <div class="basket-count">${eggs.length}/5</div>
+          <div class="basket-eggs">${eggs.map(src => `<img src="${src}" alt="Egg">`).join('')}</div>
+          <img class="base" src="https://i.postimg.cc/XZRgwvFb/basket.png" alt="Basket">
+        `;
+        btn.addEventListener('click', () => {
+          if(!selectedEgg){
+            buildFeedback.textContent = 'First tap an egg.';
+            return;
+          }
+          if(basketState[basketIndex].length >= 5){
+            buildFeedback.textContent = 'This basket is full.';
+            return;
+          }
+          basketState[basketIndex].push(selectedEgg);
+          renderBuildBaskets();
+          checkBuildProgress();
+        });
+        buildBaskets.appendChild(btn);
+      });
+    }
+
+    function checkBuildProgress(){
+      const fullBaskets = basketState.filter(b => b.length === 5).length;
+      const totalEggs = basketState.reduce((sum, b) => sum + b.length, 0);
+      if(totalEggs === buildAnswer && basketState.every(b => b.length === 0 || b.length === 5)){
+        buildFeedback.textContent = 'Yes! ' + buildAnswer;
+      } else {
+        buildFeedback.textContent = 'Keep filling the baskets.';
+      }
+    }
+
     function setupBuild(){
       buildAnswer = [5,10,15,20][Math.floor(Math.random() * 4)];
       buildTarget.textContent = buildAnswer;
-      buildChoices.innerHTML = '';
-      buildFeedback.textContent = 'Tap the right picture.';
-
-      const correctGroups = buildAnswer / 5;
-      const wrongPool = [1,2,3,4].filter(g => g !== correctGroups);
-      const wrongs = shuffle(wrongPool).slice(0,2);
-      const options = shuffle([correctGroups, ...wrongs]);
-
-      options.forEach(groups => {
-        const btn = document.createElement('button');
-        btn.className = 'choice';
-        btn.innerHTML = groupImageHTML(groups);
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('#buildChoices .choice').forEach(c => { c.disabled = true; c.classList.remove('ok','bad'); });
-          if(groups === correctGroups){
-            btn.classList.add('ok');
-            buildFeedback.textContent = 'Yes! ' + buildAnswer;
-          } else {
-            btn.classList.add('bad');
-            buildFeedback.textContent = 'Count the groups of 5.';
-            Array.from(document.querySelectorAll('#buildChoices .choice')).forEach(c => {
-              if((c.querySelectorAll('img').length) === correctGroups) c.classList.add('ok');
-            });
-          }
-        });
-        buildChoices.appendChild(btn);
-      });
+      selectedEgg = null;
+      basketState = Array.from({length:4}, () => []);
+      buildFeedback.textContent = 'Tap an egg. Then tap a basket.';
+      renderEggBank();
+      renderBuildBaskets();
     }
 
+    document.getElementById('buildResetBtn').addEventListener('click', setupBuild);
     document.getElementById('buildNextBtn').addEventListener('click', setupBuild);
 
-    const stoneWrap = document.getElementById('stoneWrap');
-    const bunnyJumper = document.getElementById('bunnyJumper');
+    const stepGrid = document.getElementById('stepGrid');
     const jumpFeedback = document.getElementById('jumpFeedback');
-    let jumpIndex = 0;
-    const jumpNumbers = [0,5,10,15,20];
+    const jumpPrompt = document.getElementById('jumpPrompt');
+    let jumpTarget = 5;
+    let currentStep = 0;
 
-    function positionBunny(){
-      const slots = Array.from(document.querySelectorAll('.stone-slot'));
-      if(!slots.length) return;
-      const rect = slots[jumpIndex].getBoundingClientRect();
-      const parentRect = stoneWrap.getBoundingClientRect();
-      const left = rect.left - parentRect.left + rect.width/2 - 48;
-      bunnyJumper.style.left = left + 'px';
-      bunnyJumper.style.top = '-8px';
+    function renderSteps(){
+      stepGrid.innerHTML = '';
+      for(let n=1; n<=20; n++){
+        const btn = document.createElement('button');
+        btn.className = 'step-btn';
+        btn.textContent = n;
+        if(n === currentStep){
+          btn.innerHTML = `${n}<img class="bunny-on-step" src="https://i.postimg.cc/GBWjkpYd/bunnysitting.png" alt="Bunny">`;
+        }
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.step-btn').forEach(b => b.classList.remove('ok','bad'));
+          if(n === jumpTarget){
+            currentStep = n;
+            btn.classList.add('ok');
+            btn.innerHTML = `${n}<img class="bunny-on-step" src="https://i.postimg.cc/yJMTFN9K/bunny-jumping.png" alt="Bunny">`;
+            setTimeout(() => {
+              renderSteps();
+            }, 220);
+            if(jumpTarget < 20){
+              jumpFeedback.textContent = 'Good!';
+              jumpTarget += 5;
+              jumpPrompt.textContent = `Now click ${jumpTarget}`;
+            } else {
+              jumpFeedback.textContent = 'Great! 5, 10, 15, 20';
+              jumpPrompt.textContent = 'Finished!';
+            }
+          } else {
+            btn.classList.add('bad');
+            jumpFeedback.textContent = 'Try the next jump of 5.';
+          }
+        });
+        stepGrid.appendChild(btn);
+      }
     }
 
     function setupJump(){
-      jumpIndex = 0;
-      stoneWrap.innerHTML = '';
-      jumpFeedback.textContent = 'Start at 0.';
-      bunnyJumper.src = 'https://i.postimg.cc/GBWjkpYd/bunnysitting.png';
-      jumpNumbers.forEach(num => {
-        const slot = document.createElement('div');
-        slot.className = 'stone-slot';
-        slot.innerHTML = `
-          <div class="stone-card"><img src="https://i.postimg.cc/9RyY1jtm/stone.png" alt="Stone"></div>
-          <div class="num">${num}</div>
-        `;
-        stoneWrap.appendChild(slot);
-      });
-      requestAnimationFrame(positionBunny);
+      currentStep = 0;
+      jumpTarget = 5;
+      jumpPrompt.textContent = 'Start at 0 → click 5';
+      jumpFeedback.textContent = 'Click 5.';
+      renderSteps();
     }
-
-    window.addEventListener('resize', () => {
-      if(screens.jump.classList.contains('active')) requestAnimationFrame(positionBunny);
-    });
-
-    document.getElementById('jumpNextBtn').addEventListener('click', () => {
-      if(jumpIndex < jumpNumbers.length - 1){
-        jumpIndex++;
-        bunnyJumper.src = 'https://i.postimg.cc/yJMTFN9K/bunny-jumping.png';
-        positionBunny();
-        setTimeout(()=>{bunnyJumper.src='https://i.postimg.cc/GBWjkpYd/bunnysitting.png';},300);
-        jumpFeedback.textContent = 'Say: ' + jumpNumbers.slice(1, jumpIndex + 1).join(', ');
-      } else {
-        jumpFeedback.textContent = 'Great! 5, 10, 15, 20';
-      }
-    });
 
     document.getElementById('jumpResetBtn').addEventListener('click', setupJump);
 
@@ -682,4 +788,5 @@
   </script>
 </body>
 </html>
+
 
