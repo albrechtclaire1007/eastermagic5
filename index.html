@@ -411,8 +411,9 @@
         <div class="center-col">
           <div class="big">Build the number</div>
           <div class="target-pill" id="buildTarget">15</div>
-          <div class="mid">Choose the right groups of 5.</div>
-          <div class="choose-grid" id="buildChoices"></div>
+          <div class=\"mid\">Choose the right groups of 5</div>
+          <div class=\"target-pill\" id=\"buildTarget\" style=\"font-size:clamp(42px,6vw,70px);\">15</div>
+          <div class=\"choose-grid\" id=\"buildChoices\"></div>
           <div class="feedback" id="buildFeedback">Tap the right picture.</div>
           <div class="bottom-bar">
             <button class="primary" id="buildNextBtn">Next</button>
@@ -429,9 +430,10 @@
         <div class="center-col">
           <div class="big">Jump by 5</div>
           <div class="mid">Tap Next jump.</div>
-          <div class="jump-track">
-            <img class="bunny-jumper" id="bunnyJumper" src="https://i.postimg.cc/yJMTFN9K/bunny-jumping.png" alt="Jumping bunny" />
-            <div class="stone-wrap" id="stoneWrap"></div>
+          <div class=\"jump-track\" style=\"background:url('https://i.postimg.cc/SKhNN4Bs/basket5.png') center/cover no-repeat; border-radius:20px;\">
+            <img class=\"bunny-jumper\" id=\"bunnyJumper\" src=\"https://i.postimg.cc/GBWjkpYd/bunnysitting.png\" alt=\"Bunny\" />
+            <div class=\"stone-wrap\" id=\"stoneWrap\"></div>
+          </div>
           </div>
           <div class="feedback" id="jumpFeedback">Start at 0.</div>
           <div class="bottom-bar">
@@ -508,12 +510,15 @@
         const btn = document.createElement('button');
         btn.className = 'basket-card';
         btn.innerHTML = `
-          <img class="peek" src="https://i.postimg.cc/KK65nYLy/5eggs.png" alt="5 eggs">
-          <img class="main-basket" src="https://i.postimg.cc/XZRgwvFb/basket.png" alt="Basket">
+          <img class=\"main-basket\" src=\"https://i.postimg.cc/XZRgwvFb/basket.png\" alt=\"Basket\">
         `;
         btn.addEventListener('click', () => {
+          btn.innerHTML = `<img class=\"main-basket\" src=\"https://i.postimg.cc/SKhNN4Bs/basket5.png\" alt=\"Basket with eggs\">`;
+          basketFeedback.textContent = '';
+        });
+        btn.addEventListener('click', () => {
           btn.classList.toggle('reveal');
-          basketFeedback.textContent = 'Count: ' + Array.from({length:basketCount}, (_,n)=>(n+1)*5).join(', ');
+          basketFeedback.textContent = '';
         });
         basketRow.appendChild(btn);
       }
@@ -521,7 +526,7 @@
 
     document.getElementById('basketRevealBtn').addEventListener('click', () => {
       document.querySelectorAll('.basket-card').forEach(card => card.classList.add('reveal'));
-      basketFeedback.textContent = 'Count: ' + Array.from({length:basketCount}, (_,n)=>(n+1)*5).join(', ');
+      basketFeedback.textContent = '';
     });
     document.getElementById('basketNextBtn').addEventListener('click', setupBaskets);
 
@@ -642,6 +647,7 @@
       jumpIndex = 0;
       stoneWrap.innerHTML = '';
       jumpFeedback.textContent = 'Start at 0.';
+      bunnyJumper.src = 'https://i.postimg.cc/GBWjkpYd/bunnysitting.png';
       jumpNumbers.forEach(num => {
         const slot = document.createElement('div');
         slot.className = 'stone-slot';
@@ -661,7 +667,9 @@
     document.getElementById('jumpNextBtn').addEventListener('click', () => {
       if(jumpIndex < jumpNumbers.length - 1){
         jumpIndex++;
+        bunnyJumper.src = 'https://i.postimg.cc/yJMTFN9K/bunny-jumping.png';
         positionBunny();
+        setTimeout(()=>{bunnyJumper.src='https://i.postimg.cc/GBWjkpYd/bunnysitting.png';},300);
         jumpFeedback.textContent = 'Say: ' + jumpNumbers.slice(1, jumpIndex + 1).join(', ');
       } else {
         jumpFeedback.textContent = 'Great! 5, 10, 15, 20';
@@ -674,3 +682,4 @@
   </script>
 </body>
 </html>
+
