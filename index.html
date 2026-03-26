@@ -643,10 +643,7 @@
 
     document.getElementById('handsNextBtn').addEventListener('click', setupHands);
 
-    const buildTarget = document.getElementById('buildTarget');
-    const buildChoices = document.getElementById('buildChoices');
-    const buildFeedback = document.getElementById('buildFeedback');
-    let buildAnswer = 15;
+    
 
     function groupImageHTML(groups){
       return `<div class="group-row">${Array.from({length:groups}, () => `<img src="https://i.postimg.cc/KK65nYLy/5eggs.png" alt="5 eggs">`).join('')}</div>`;
@@ -788,5 +785,6 @@
   </script>
 </body>
 </html>
+
 
 
