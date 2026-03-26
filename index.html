@@ -327,19 +327,16 @@
     .drop-basket img.base{position:absolute; inset:auto 0 0 0; width:100%; height:auto; z-index:2; pointer-events:none}
     .basket-eggs{
       position:absolute;
-      left:18px;
-      right:18px;
-      bottom:34px;
-      min-height:70px;
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:2px;
-      align-items:end;
-      justify-items:center;
-      z-index:1;
+      inset:0;
+      z-index:3;
       pointer-events:none;
     }
-    .basket-eggs img{width:32px; height:32px; object-fit:contain}
+    .basket-eggs img{
+      position:absolute;
+      width:34px;
+      height:34px;
+      object-fit:contain;
+    }
     .drop-basket.over .base{filter:drop-shadow(0 0 8px rgba(243,180,92,.8))}
 
     .jump-scroll{
@@ -514,8 +511,6 @@
           <div class="target-pill" id="buildTarget" style="font-size:clamp(42px,6vw,70px);">15</div>
           <div class="build-board">
             <div class="egg-bank" id="eggBank"></div>
-            <div class="build-baskets" id="buildBaskets"></div>
-          </div>
             <div class="build-baskets" id="buildBaskets"></div>
           </div>
           <div class="feedback" id="buildFeedback">Tap an egg. Then tap a basket.</div>
@@ -749,7 +744,10 @@
       if(target){
         const index = Number(target.dataset.index);
         if(basketState[index].length < 5){
-          basketState[index].push(dragState.src);
+          const rect = target.getBoundingClientRect();
+          const dropX = e.clientX - rect.left;
+          const dropY = e.clientY - rect.top;
+          basketState[index].push({ src: dragState.src, x: dropX, y: dropY });
           renderBuildBaskets();
           checkBuildProgress();
         } else {
@@ -767,7 +765,11 @@
         btn.className = 'drop-basket';
         btn.dataset.index = basketIndex;
         btn.innerHTML = `
-          <div class="basket-eggs">${eggs.map(src => `<img src="${src}" alt="Egg">`).join('')}</div>
+          <div class="basket-eggs">${eggs.map((egg, i) => {
+            const x = Math.max(18, Math.min(118, (egg.x ?? (40 + i * 16)) - 17));
+            const y = Math.max(26, Math.min(98, (egg.y ?? (74 + (i % 2) * 10)) - 17));
+            return `<img src="${egg.src}" alt="Egg" style="left:${x}px; top:${y}px;">`;
+          }).join('')}</div>
           <img class="base" src="https://i.postimg.cc/XZRgwvFb/basket.png" alt="Basket">
         `;
         buildBaskets.appendChild(btn);
