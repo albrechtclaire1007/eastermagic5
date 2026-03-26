@@ -280,6 +280,7 @@
       display:grid;
       grid-template-columns:repeat(2,1fr);
       gap:10px;
+      align-content:start;
     }
 
     .egg-piece{
@@ -288,8 +289,20 @@
       box-shadow:none;
       padding:6px;
       border-radius:18px;
+      touch-action:none;
+      cursor:grab;
     }
-    .egg-piece img{width:72px; height:72px; object-fit:contain}
+    .egg-piece img{width:72px; height:72px; object-fit:contain; pointer-events:none}
+
+    .drag-ghost{
+      position:fixed;
+      width:72px;
+      height:72px;
+      object-fit:contain;
+      pointer-events:none;
+      z-index:9999;
+      transform:translate(-50%,-50%);
+    }
 
     .build-baskets{
       display:flex;
@@ -309,7 +322,7 @@
       box-shadow:none;
       padding:0;
     }
-    .drop-basket img.base{position:absolute; inset:auto 0 0 0; width:100%; height:auto; z-index:2}
+    .drop-basket img.base{position:absolute; inset:auto 0 0 0; width:100%; height:auto; z-index:2; pointer-events:none}
     .basket-eggs{
       position:absolute;
       left:18px;
@@ -335,38 +348,72 @@
       padding:4px 10px;
       font-size:20px; font-weight:800;
       z-index:3;
+      pointer-events:none;
     }
+    .drop-basket.over .base{filter:drop-shadow(0 0 8px rgba(243,180,92,.8))}
 
-    .step-grid{
+    .jump-scroll{
       width:min(980px, 100%);
-      display:grid;
-      grid-template-columns:repeat(5, 1fr);
-      gap:12px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      padding:16px 0 8px;
+      -webkit-overflow-scrolling:touch;
     }
 
-    .step-btn{
+    .jump-lane{
       position:relative;
-      min-height:90px;
-      border:3px solid #e8d9c7;
-      background:rgba(255,255,255,.88);
-      border-radius:22px;
-      font-size:34px;
-      font-weight:900;
+      width:1780px;
+      min-height:190px;
+      padding:16px 20px 28px;
+    }
+
+    .stone-line{
+      position:absolute;
+      left:20px;
+      right:20px;
+      bottom:18px;
+      display:flex;
+      gap:18px;
+      align-items:flex-end;
+    }
+
+    .stone-step{
+      position:relative;
+      width:120px;
+      height:110px;
+      border:none;
+      background:transparent;
+      box-shadow:none;
+      padding:0;
+      flex:0 0 120px;
+      scroll-margin-left:40px;
+    }
+    .stone-step img.stone{width:100%; height:auto; display:block; pointer-events:none}
+    .stone-step .stone-num{
+      position:absolute;
+      inset:0;
       display:flex;
       align-items:center;
       justify-content:center;
-      overflow:hidden;
-    }
-    .step-btn.ok{background:var(--ok)}
-    .step-btn.bad{background:var(--bad)}
-    .step-btn .bunny-on-step{
-      position:absolute;
-      right:4px;
-      bottom:2px;
-      width:42px;
-      height:42px;
-      object-fit:contain;
+      font-size:34px;
+      font-weight:900;
+      color:#4b3b2a;
       pointer-events:none;
+      transform:translateY(4px);
+    }
+    .stone-step.ok .stone{filter:drop-shadow(0 0 8px rgba(159,211,143,.9))}
+    .stone-step.bad .stone{filter:drop-shadow(0 0 8px rgba(255,120,120,.8))}
+
+    .lane-bunny{
+      position:absolute;
+      bottom:66px;
+      left:28px;
+      width:84px;
+      height:84px;
+      object-fit:contain;
+      transition:left .45s ease;
+      pointer-events:none;
+      z-index:5;
     }
 
     .tiny-note{
@@ -375,6 +422,9 @@
     }
 
     @media (max-width: 760px){
+      .build-board{grid-template-columns:1fr}
+      .jump-lane{width:1540px}
+    }
       .build-board{grid-template-columns:1fr}
       .step-grid{grid-template-columns:repeat(4, 1fr)}
     }
@@ -488,13 +538,18 @@
         <button class="info-btn" data-parent="jump"><img src="https://i.postimg.cc/hzV1Mqbc/info.png" alt="Info"></button>
         <div class="parent-box" id="parent-jump">
           <h3>Parent tip</h3>
-          <p>Ask her to click the next number in the 5s sequence: 5, 10, 15, 20. The bunny should land on that number. Later, you can do the same on a real number path on the floor.</p>
+          <p>Ask her to click the next number in the 5s sequence: 5, 10, 15, 20. The bunny sits and waits, then jumps to the correct stone. This keeps the focus on the next 5-step target.</p>
         </div>
         <div class="center-col">
-          <div class="big">Click the right step</div>
-          <div class="mid">Which number comes next?</div>
+          <div class="big">Jump by 5</div>
+          <div class="mid">Click the next stone.</div>
           <div class="target-pill" id="jumpPrompt">Start at 0 → click 5</div>
-          <div class="step-grid" id="stepGrid"></div>
+          <div class="jump-scroll" id="jumpScroll">
+            <div class="jump-lane" id="jumpLane">
+              <img class="lane-bunny" id="laneBunny" src="https://i.postimg.cc/GBWjkpYd/bunnysitting.png" alt="Bunny" />
+              <div class="stone-line" id="stoneLine"></div>
+            </div>
+          </div>
           <div class="feedback" id="jumpFeedback">Click 5.</div>
           <div class="bottom-bar">
             <button class="secondary" id="jumpResetBtn">Reset</button>
@@ -654,8 +709,8 @@
     const buildFeedback = document.getElementById('buildFeedback');
     const eggBank = document.getElementById('eggBank');
     let buildAnswer = 15;
-    let selectedEgg = null;
     let basketState = [];
+    let dragState = null;
     const eggSources = [
       'https://i.postimg.cc/wtCkhBJq/egg1.png',
       'https://i.postimg.cc/ftYf5h76/egg2.png',
@@ -669,15 +724,51 @@
         const btn = document.createElement('button');
         btn.className = 'egg-piece';
         const src = eggSources[i % eggSources.length];
+        btn.dataset.src = src;
         btn.innerHTML = `<img src="${src}" alt="Egg">`;
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.egg-piece').forEach(e => e.style.outline = 'none');
-          selectedEgg = src;
-          btn.style.outline = '4px solid #f3b45c';
-          buildFeedback.textContent = 'Now tap a basket.';
-        });
+        btn.addEventListener('pointerdown', startEggDrag);
         eggBank.appendChild(btn);
       }
+    }
+
+    function startEggDrag(e){
+      const src = e.currentTarget.dataset.src;
+      const ghost = document.createElement('img');
+      ghost.className = 'drag-ghost';
+      ghost.src = src;
+      document.body.appendChild(ghost);
+      dragState = { src, ghost };
+      moveEggGhost(e);
+      window.addEventListener('pointermove', moveEggGhost);
+      window.addEventListener('pointerup', endEggDrag, { once:true });
+      buildFeedback.textContent = 'Drop the egg into a basket.';
+    }
+
+    function moveEggGhost(e){
+      if(!dragState) return;
+      dragState.ghost.style.left = e.clientX + 'px';
+      dragState.ghost.style.top = e.clientY + 'px';
+      document.querySelectorAll('.drop-basket').forEach(b => b.classList.remove('over'));
+      const target = document.elementFromPoint(e.clientX, e.clientY)?.closest('.drop-basket');
+      if(target) target.classList.add('over');
+    }
+
+    function endEggDrag(e){
+      window.removeEventListener('pointermove', moveEggGhost);
+      document.querySelectorAll('.drop-basket').forEach(b => b.classList.remove('over'));
+      const target = document.elementFromPoint(e.clientX, e.clientY)?.closest('.drop-basket');
+      if(target){
+        const index = Number(target.dataset.index);
+        if(basketState[index].length < 5){
+          basketState[index].push(dragState.src);
+          renderBuildBaskets();
+          checkBuildProgress();
+        } else {
+          buildFeedback.textContent = 'This basket is full.';
+        }
+      }
+      if(dragState?.ghost) dragState.ghost.remove();
+      dragState = null;
     }
 
     function renderBuildBaskets(){
@@ -685,32 +776,20 @@
       basketState.forEach((eggs, basketIndex) => {
         const btn = document.createElement('button');
         btn.className = 'drop-basket';
+        btn.dataset.index = basketIndex;
         btn.innerHTML = `
           <div class="basket-count">${eggs.length}/5</div>
           <div class="basket-eggs">${eggs.map(src => `<img src="${src}" alt="Egg">`).join('')}</div>
           <img class="base" src="https://i.postimg.cc/XZRgwvFb/basket.png" alt="Basket">
         `;
-        btn.addEventListener('click', () => {
-          if(!selectedEgg){
-            buildFeedback.textContent = 'First tap an egg.';
-            return;
-          }
-          if(basketState[basketIndex].length >= 5){
-            buildFeedback.textContent = 'This basket is full.';
-            return;
-          }
-          basketState[basketIndex].push(selectedEgg);
-          renderBuildBaskets();
-          checkBuildProgress();
-        });
         buildBaskets.appendChild(btn);
       });
     }
 
     function checkBuildProgress(){
-      const fullBaskets = basketState.filter(b => b.length === 5).length;
       const totalEggs = basketState.reduce((sum, b) => sum + b.length, 0);
-      if(totalEggs === buildAnswer && basketState.every(b => b.length === 0 || b.length === 5)){
+      const valid = basketState.every(b => b.length === 0 || b.length === 5);
+      if(totalEggs === buildAnswer && valid){
         buildFeedback.textContent = 'Yes! ' + buildAnswer;
       } else {
         buildFeedback.textContent = 'Keep filling the baskets.';
@@ -720,9 +799,10 @@
     function setupBuild(){
       buildAnswer = [5,10,15,20][Math.floor(Math.random() * 4)];
       buildTarget.textContent = buildAnswer;
-      selectedEgg = null;
       basketState = Array.from({length:4}, () => []);
-      buildFeedback.textContent = 'Tap an egg. Then tap a basket.';
+      if(dragState?.ghost) dragState.ghost.remove();
+      dragState = null;
+      buildFeedback.textContent = 'Drag eggs into the baskets.';
       renderEggBank();
       renderBuildBaskets();
     }
@@ -730,54 +810,89 @@
     document.getElementById('buildResetBtn').addEventListener('click', setupBuild);
     document.getElementById('buildNextBtn').addEventListener('click', setupBuild);
 
-    const stepGrid = document.getElementById('stepGrid');
+    const stoneLine = document.getElementById('stoneLine');
     const jumpFeedback = document.getElementById('jumpFeedback');
     const jumpPrompt = document.getElementById('jumpPrompt');
+    const laneBunny = document.getElementById('laneBunny');
+    const jumpScroll = document.getElementById('jumpScroll');
     let jumpTarget = 5;
     let currentStep = 0;
+    let jumpBusy = false;
 
-    function renderSteps(){
-      stepGrid.innerHTML = '';
-      for(let n=1; n<=20; n++){
+    function renderStoneLine(){
+      stoneLine.innerHTML = '';
+      for(let n=0; n<=20; n++){
         const btn = document.createElement('button');
-        btn.className = 'step-btn';
-        btn.textContent = n;
-        if(n === currentStep){
-          btn.innerHTML = `${n}<img class="bunny-on-step" src="https://i.postimg.cc/GBWjkpYd/bunnysitting.png" alt="Bunny">`;
-        }
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.step-btn').forEach(b => b.classList.remove('ok','bad'));
-          if(n === jumpTarget){
-            currentStep = n;
-            btn.classList.add('ok');
-            btn.innerHTML = `${n}<img class="bunny-on-step" src="https://i.postimg.cc/yJMTFN9K/bunny-jumping.png" alt="Bunny">`;
-            setTimeout(() => {
-              renderSteps();
-            }, 220);
-            if(jumpTarget < 20){
-              jumpFeedback.textContent = 'Good!';
-              jumpTarget += 5;
-              jumpPrompt.textContent = `Now click ${jumpTarget}`;
-            } else {
-              jumpFeedback.textContent = 'Great! 5, 10, 15, 20';
-              jumpPrompt.textContent = 'Finished!';
-            }
-          } else {
-            btn.classList.add('bad');
-            jumpFeedback.textContent = 'Try the next jump of 5.';
-          }
-        });
-        stepGrid.appendChild(btn);
+        btn.className = 'stone-step';
+        btn.dataset.num = n;
+        btn.innerHTML = `
+          <img class="stone" src="https://i.postimg.cc/9RyY1jtm/stone.png" alt="Stone">
+          <div class="stone-num">${n}</div>
+        `;
+        btn.addEventListener('click', () => onStoneClick(n, btn));
+        stoneLine.appendChild(btn);
       }
+      positionLaneBunny(currentStep, false);
+    }
+
+    function getStoneCenterX(num){
+      const stone = Array.from(document.querySelectorAll('.stone-step')).find(s => Number(s.dataset.num) === num);
+      if(!stone) return 28;
+      return stone.offsetLeft + stone.offsetWidth / 2 - 42;
+    }
+
+    function positionLaneBunny(num, jumping){
+      laneBunny.style.left = getStoneCenterX(num) + 'px';
+      laneBunny.src = jumping
+        ? 'https://i.postimg.cc/yJMTFN9K/bunny-jumping.png'
+        : 'https://i.postimg.cc/GBWjkpYd/bunnysitting.png';
+      const stone = Array.from(document.querySelectorAll('.stone-step')).find(s => Number(s.dataset.num) === num);
+      if(stone){
+        stone.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+      }
+    }
+
+    function onStoneClick(n, btn){
+      if(jumpBusy) return;
+      document.querySelectorAll('.stone-step').forEach(b => b.classList.remove('ok','bad'));
+      if(n !== jumpTarget){
+        btn.classList.add('bad');
+        jumpFeedback.textContent = 'Try the next jump of 5.';
+        return;
+      }
+      jumpBusy = true;
+      btn.classList.add('ok');
+      laneBunny.src = 'https://i.postimg.cc/yJMTFN9K/bunny-jumping.png';
+      laneBunny.style.left = getStoneCenterX(n) + 'px';
+      jumpFeedback.textContent = 'Good!';
+      setTimeout(() => {
+        currentStep = n;
+        positionLaneBunny(currentStep, false);
+        if(jumpTarget < 20){
+          jumpTarget += 5;
+          jumpPrompt.textContent = `Now click ${jumpTarget}`;
+          jumpFeedback.textContent = `Click ${jumpTarget}.`;
+        } else {
+          jumpPrompt.textContent = 'Finished!';
+          jumpFeedback.textContent = 'Great! 5, 10, 15, 20';
+        }
+        jumpBusy = false;
+      }, 480);
     }
 
     function setupJump(){
       currentStep = 0;
       jumpTarget = 5;
+      jumpBusy = false;
       jumpPrompt.textContent = 'Start at 0 → click 5';
       jumpFeedback.textContent = 'Click 5.';
-      renderSteps();
+      renderStoneLine();
+      setTimeout(() => positionLaneBunny(0, false), 50);
     }
+
+    window.addEventListener('resize', () => {
+      if(screens.jump.classList.contains('active')) positionLaneBunny(currentStep, false);
+    });
 
     document.getElementById('jumpResetBtn').addEventListener('click', setupJump);
 
@@ -785,6 +900,4 @@
   </script>
 </body>
 </html>
-
-
 
